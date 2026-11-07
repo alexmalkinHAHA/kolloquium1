@@ -95,10 +95,24 @@
     _auth: null,
 
     _init() {
-      if (this._app) return;
-      this._app = firebase.initializeApp(window.FIREBASE_CONFIG);
-      this._db = firebase.firestore();
-      this._auth = firebase.auth();
+      // Guard on _db (not _app): if a previous attempt threw partway through
+      // (e.g. "Firebase App named '[DEFAULT]' already exists" after Safari
+      // suspends/reloads the tab while a photo upload is in flight), _app
+      // could end up set while _db never did — which used to permanently
+      // disable the database for the rest of the session. Also reuse an
+      // already-registered app instead of re-calling initializeApp, so a
+      // stray duplicate init never throws in the first place.
+      if (this._db) return;
+      try {
+        this._app = firebase.apps && firebase.apps.length ? firebase.apps[0] : firebase.initializeApp(window.FIREBASE_CONFIG);
+        this._db = firebase.firestore();
+        this._auth = firebase.auth();
+      } catch (e) {
+        this._app = null;
+        this._db = null;
+        this._auth = null;
+        throw new Error("Не удалось подключиться к базе данных. Проверьте интернет-соединение и обновите страницу. (" + e.message + ")");
+      }
     },
 
     async upsertStudent({ login, name, group }) {

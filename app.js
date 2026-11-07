@@ -262,27 +262,51 @@
       $("btnNext").disabled = true;
     }
     $("photoInput").value = "";
+    hideSyncWarning();
+    await ensureSubmission(item);
+  }
 
-    if (!item.subId) {
-      try {
-        const { id } = await window.Backend.createSubmission({
-          login: student.login,
-          name: student.name,
-          group: student.group,
-          taskKey: item.taskKey,
-          taskTitle: item.taskTitle,
-          problemId: item.problem.id,
-        });
-        item.subId = id;
-        saveSession("practice");
-      } catch (err) {
-        console.error(err);
-      }
+  // Creates the Firestore/demo submission record for this problem if it
+  // doesn't exist yet. Called on first render AND re-checked before every
+  // check/photo action, so a failed create (bad connection, Firebase hiccup)
+  // self-heals on the next user action instead of leaving subId permanently
+  // unset.
+  async function ensureSubmission(item) {
+    if (item.subId) return true;
+    try {
+      const { id } = await window.Backend.createSubmission({
+        login: student.login,
+        name: student.name,
+        group: student.group,
+        taskKey: item.taskKey,
+        taskTitle: item.taskTitle,
+        problemId: item.problem.id,
+      });
+      item.subId = id;
+      saveSession("practice");
+      return true;
+    } catch (err) {
+      console.error(err);
+      showSyncWarning(
+        "⚠ Не удалось сохранить задачу на сервере (" + err.message + "). " +
+        "Ваш прогресс по этой задаче может не дойти до преподавателя — обновите страницу и попробуйте снова."
+      );
+      return false;
     }
+  }
+
+  function showSyncWarning(text) {
+    const el = $("syncWarning");
+    el.textContent = text;
+    el.hidden = false;
+  }
+  function hideSyncWarning() {
+    $("syncWarning").hidden = true;
   }
 
   async function onCheck() {
     const item = queue[qi];
+    await ensureSubmission(item);
     const inputs = Array.from($("answerForm").querySelectorAll("input"));
     const answer = {};
     let allFilled = true;
@@ -325,6 +349,9 @@
       });
     } catch (err) {
       console.error(err);
+      showSyncWarning(
+        "⚠ Не удалось сохранить ваш ответ на сервере (" + err.message + "). Обновите страницу и попробуйте ещё раз."
+      );
     }
   }
 
@@ -333,6 +360,12 @@
     if (!file) return;
     const item = queue[qi];
     $("photoStatus").textContent = "Загрузка…";
+    const ok = await ensureSubmission(item);
+    if (!ok) {
+      $("photoStatus").textContent = "Сначала нужно сохранить задачу на сервере — см. предупреждение выше.";
+      e.target.value = "";
+      return;
+    }
     try {
       await window.Backend.attachPhoto({
         submissionId: item.subId,
