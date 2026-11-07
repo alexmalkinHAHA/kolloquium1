@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Отработка коллоквиума 1 по микроэкономике</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="demoBanner" class="demo-banner" hidden>
+  ДЕМО-РЕЖИМ: данные сохраняются только в этом браузере и никуда не отправляются.
+  Чтобы подключить настоящую базу данных — см. <code>README.md</code>.
+</div>
+
+<header class="topbar">
+  <h1 id="siteTitle">Отработка ошибок — Коллоквиум 1</h1>
+  <a class="admin-link" href="admin.html">Вход для преподавателя</a>
+</header>
+
+<main class="wrap">
+
+  <!-- ЭКРАН 1: вход -->
+  <section id="screen-login" class="screen">
+    <h2>Шаг 1. Представьтесь</h2>
+    <p class="muted">Придумайте логин сами (например, фамилия + группа латиницей) — он нужен, чтобы ваши результаты и фото попали в таблицу преподавателя под вашим именем. Пароль не нужен.</p>
+    <form id="loginForm" class="card">
+      <label>ФИО
+        <input type="text" id="fName" required autocomplete="name" placeholder="Иванов Иван Иванович" />
+      </label>
+      <label>Группа
+        <input type="text" id="fGroup" required placeholder="ЭК-21-1" />
+      </label>
+      <label>Ваш логин (придумайте сами)
+        <input type="text" id="fLogin" required placeholder="ivanov21" pattern="[A-Za-z0-9_\-]{3,20}" title="3–20 символов: латинские буквы, цифры, - и _" />
+      </label>
+      <button type="submit" class="btn-primary">Продолжить</button>
+    </form>
+  </section>
+
+  <!-- ЭКРАН 2: самооценка -->
+  <section id="screen-assess" class="screen" hidden>
+    <h2>Шаг 2. Оцените, как вы решили каждую задачу коллоквиума</h2>
+    <p class="muted">Для каждой задачи отметьте, как вы её решили. Если решили полностью — тренировка по ней не понадобится.</p>
+    <form id="assessForm" class="card" id="assessList"></form>
+    <button id="btnBuildPlan" class="btn-primary">Сформировать тренировку</button>
+  </section>
+
+  <!-- ЭКРАН 3: план -->
+  <section id="screen-plan" class="screen" hidden>
+    <h2>Шаг 3. Ваш план тренировки</h2>
+    <div id="planSummary" class="card"></div>
+    <button id="btnStartPractice" class="btn-primary">Начать решать</button>
+  </section>
+
+  <!-- ЭКРАН 4: практика -->
+  <section id="screen-practice" class="screen" hidden>
+    <div class="progress-row">
+      <div class="progress-label" id="progressLabel"></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="card" id="problemCard">
+      <div class="problem-tag" id="problemTag"></div>
+      <pre class="problem-text" id="problemText"></pre>
+      <form id="answerForm" class="answer-form" id="answerInputs"></form>
+      <div id="feedback" class="feedback" hidden></div>
+      <div class="photo-zone" id="photoZone" hidden>
+        <p>Отлично! Теперь приложите фото вашего письменного решения этой задачи.</p>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" />
+        <div id="photoStatus" class="muted"></div>
+      </div>
+      <div class="actions">
+        <button id="btnCheck" type="button" class="btn-primary">Проверить ответ</button>
+        <button id="btnNext" type="button" class="btn-secondary" hidden>Далее →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЭКРАН 5: финиш -->
+  <section id="screen-done" class="screen" hidden>
+    <h2>Готово! 🎓</h2>
+    <div class="card" id="doneSummary"></div>
+    <button id="btnRestart" class="btn-secondary">Пройти ещё раз / выбрать другие задачи</button>
+  </section>
+
+</main>
+
+<footer class="footer">Сервис отработки задач коллоквиума 1 по микроэкономике</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<script src="backend.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
